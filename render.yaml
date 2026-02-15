@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: viral-student-agent
+    runtime: node
+    region: singapore
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: SCRAPINGDOG_API_KEY
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: RECIPIENT_EMAIL
+        sync: false
+      - key: SEARCH_DAYS
+        value: 1,3,5
+      - key: MAX_TOTAL_SEARCHES
+        value: 100
+      - key: DAILY_SEARCH_LIMIT
+        value: 2
+      - key: SAFETY_RESERVE
+        value: 10
+      - key: CRON_SCHEDULE
+        value: "0 18 * * *"
+      - key: TIMEZONE
+        value: Asia/Kolkata
+      - key: DEDUPLICATION_DAYS
+        value: 30
+      - key: IDEAS_PER_DAY
+        value: 5
