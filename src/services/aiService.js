@@ -9,6 +9,26 @@ class AIService {
             apiKey: process.env.OPENROUTER_API_KEY
         });
         this.model = 'google/gemini-2.5-flash-lite';
+        this.contentCategories = [
+            { name: '🎓 Academics', keywords: ['study tips', 'exam prep', 'CGPA', 'assignments', 'notes', 'competitive exams'] },
+            { name: '💻 AI & Tech', keywords: ['ChatGPT', 'AI tools', 'productivity apps', 'automation', 'coding', 'tech career'] },
+            { name: '💰 Money & Hustles', keywords: ['freelancing', 'side hustle', 'passive income', 'investments', 'earning', 'business'] },
+            { name: '🎯 Career Growth', keywords: ['resume', 'LinkedIn', 'internship', 'placement', 'interview', 'job search'] },
+            { name: '🏃 Student Life', keywords: ['hostel', 'campus', 'college', 'time management', 'friendships', 'college stories'] },
+            { name: '🎨 Skills & Learning', keywords: ['upskilling', 'certifications', 'courses', 'learning', 'skill gaps', 'workshops'] },
+            { name: '🧠 Mindset & Growth', keywords: ['motivation', 'confidence', 'personal brand', 'growth mindset', 'discipline'] },
+            { name: '🌐 Current Affairs', keywords: ['trending topics', 'news', 'industry updates', 'current events', 'tech news'] },
+            { name: '💪 Fitness & Health', keywords: ['fitness', 'diet', 'workout', 'stress management', 'mental health', 'yoga'] },
+            { name: '🎬 Entertainment & Trends', keywords: ['memes', 'trends', 'relatable content', 'pop culture', 'viral moments'] }
+        ];
+    }
+
+    /**
+     * Select random content categories for variety
+     */
+    selectContentCategories(count = 3) {
+        const shuffled = [...this.contentCategories].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, Math.min(count, this.contentCategories.length));
     }
 
     /**
@@ -26,14 +46,14 @@ class AIService {
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a viral content strategist specializing in Indian Gen-Z Instagram Reels. You create scroll-stopping Hinglish content for students focused on AI, career growth, and money.'
+                        content: 'You are a viral content strategist specializing in Indian Gen-Z Instagram Reels. You create scroll-stopping Hinglish content for students covering ALL aspects of student life - academics, career, money, lifestyle, health, entertainment, and trending topics.'
                     },
                     {
                         role: 'user',
                         content: prompt
                     }
                 ],
-                temperature: 0.9,
+                temperature: 0.95, // Increased for more creativity
                 max_tokens: 2500
             });
 
@@ -50,17 +70,29 @@ class AIService {
      */
     buildPrompt(keywords, existingHooks, count) {
         const hookExamples = existingHooks.slice(0, 5).map(h => `- "${h}"`).join('\n');
+        const selectedCategories = this.selectContentCategories(3);
+        const categoryText = selectedCategories.map(c => `${c.name}: ${c.keywords.join(', ')}`).join('\n');
 
         return `You are creating ${count} viral Instagram Reel ideas for Indian students (18-25) in HINGLISH.
 
 TRENDING KEYWORDS: ${keywords.join(', ')}
 
+**CONTENT VARIETY REQUIREMENT**:
+Create ideas covering DIFFERENT categories from these focus areas:
+${categoryText}
+
+MANDATORY DIVERSITY RULES:
+- Each idea MUST be from a DIFFERENT category
+- NO two ideas should follow the same pattern or theme
+- Mix educational, entertaining, relatable, and inspirational content
+- Avoid repeating "AI tool X will change your life" type patterns
+- Balance between practical tips, storytelling, controversy, and trending topics
+
 RULES:
 1. Hook in HINGLISH (Hindi + English mix)
 2. Avoid these recent hooks:
 ${hookExamples || '(No previous hooks)'}
-3. Focus: AI tools, Student productivity, Career FOMO, Money making
-4. Gen-Z slang, emojis, urgency
+3. Gen-Z slang, emojis, urgency
 
 CRITICAL SCRIPT REQUIREMENTS:
 - NO GENERIC ADVICE! Scripts MUST contain REAL, SPECIFIC information
@@ -162,7 +194,7 @@ Return ${count} ideas. Each script MUST have specific, actionable, real informat
                 trend.keywords.forEach(kw => allKeywords.add(kw));
             }
         });
-        return Array.from(allKeywords).slice(0, 15); // Top 15 keywords
+        return Array.from(allKeywords).slice(0, 25); // Top 25 keywords for more variety
     }
 
     /**
@@ -171,10 +203,18 @@ Return ${count} ideas. Each script MUST have specific, actionable, real informat
     async reAngleTrends(oldTrends, existingHooks, count = 5) {
         const keywords = oldTrends.flatMap(t => t.keywords || []);
         const uniqueKeywords = [...new Set(keywords)].slice(0, 10);
+        const selectedCategories = this.selectContentCategories(3);
+        const categoryText = selectedCategories.map(c => `${c.name}: ${c.keywords.join(', ')}`).join('\n');
 
         const prompt = `Create ${count} FRESH Instagram Reel ideas for Indian students in HINGLISH.
 
 TREND KEYWORDS: ${uniqueKeywords.join(', ')}
+
+**CONTENT VARIETY REQUIREMENT**:
+Create ideas covering DIFFERENT categories:
+${categoryText}
+
+MANDATORY: Each idea MUST be from a DIFFERENT category. NO pattern repetition!
 
 AVOID these hooks:
 ${existingHooks.slice(0, 10).map(h => `- "${h}"`).join('\n')}
@@ -222,7 +262,7 @@ Return ${count} ideas with SPECIFIC, ACTIONABLE information. ONLY JSON array.`;
                         content: prompt
                     }
                 ],
-                temperature: 0.95, // Higher temperature for more creativity
+                temperature: 0.98, // Very high temperature for maximum creativity
                 max_tokens: 2500
             });
 

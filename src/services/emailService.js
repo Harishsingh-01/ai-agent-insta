@@ -5,12 +5,28 @@ dotenv.config();
 
 class EmailService {
   constructor() {
+    // Gmail SMTP with optimized settings for cloud hosting
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587, // TLS port
+      secure: false, // Use STARTTLS
       auth: {
         user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD.replace(/\s/g, '') // Remove spaces from app password
-      }
+        pass: process.env.GMAIL_APP_PASSWORD.replace(/\s/g, '') // Remove spaces
+      },
+      connectionTimeout: 30000, // 30 seconds
+      greetingTimeout: 30000,
+      socketTimeout: 60000,
+      logger: true,
+      debug: true,
+      tls: {
+        rejectUnauthorized: false, // Allow self-signed certificates
+        minVersion: 'TLSv1.2'
+      },
+      pool: true, // Use pooled connections
+      maxConnections: 1,
+      rateDelta: 1000,
+      rateLimit: 1
     });
   }
 
